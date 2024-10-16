@@ -8,8 +8,8 @@
 // @license      MIT; https://raw.githubusercontent.com/RyoLee/emby-danmaku/master/LICENSE
 // @icon         https://github.githubassets.com/pinned-octocat.svg
 // @grant        none
-// @match        */web/index.html
-// @match        */web/
+// @match        *://*/web/index.html
+// @match        *://*/web/
 // ==/UserScript==
 
 (async function () {
