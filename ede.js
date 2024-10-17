@@ -3,7 +3,7 @@
 // @description  Emby弹幕插件 - Emby风格
 // @namespace    https://github.com/chen3861229/dd-danmaku
 // @author       chen3861229
-// @version      1.35
+// @version      1.36
 // @copyright    2022, RyoLee (https://github.com/RyoLee)
 // @license      MIT; https://raw.githubusercontent.com/RyoLee/emby-danmaku/master/LICENSE
 // @icon         https://github.githubassets.com/pinned-octocat.svg
@@ -21,14 +21,14 @@
     let corsProxy = 'https://ddplay-api.7o7o.cc/cors/';
     // ------ 用户配置 end ------
     // ------ 程序内部使用,请勿更改 start ------
-    const openSouceLicense = {
-        self: { version: '1.34', name: 'Emby Danmaku Extension(Based on 1.11)', license: 'MIT License', url: 'https://github.com/chen3861229/dd-danmaku' },
+    const openSourceLicense = {
+        self: { version: '1.36', name: 'Emby Danmaku Extension(Based on 1.11)', license: 'MIT License', url: 'https://github.com/chen3861229/dd-danmaku' },
         original: { version: '1.11', name: 'Emby Danmaku Extension', license: 'MIT License', url: 'https://github.com/RyoLee/emby-danmaku' },
         jellyfinFork: { version: '1.45', name: 'Jellyfin Danmaku Extension', license: 'MIT License', url: 'https://github.com/Izumiko/jellyfin-danmaku' },
         danmaku: { version: '2.0.6', name: 'Danmaku', license: 'MIT License', url: 'https://github.com/weizhenye/Danmaku' },
         danmakuFork: { version: 'v1.2.1', name: 'Danmaku(Based on 2.0.6)', license: 'MIT License', url: 'https://github.com/lanytcc/Danmaku' },
         dandanplayApi: { version: 'v2', name: '弹弹 play API', license: 'MIT License', url: 'https://github.com/kaedei/dandanplay-libraryindex' },
-        bangumiApi: { version: '2024-01-30', name: 'Bangumi API', license: 'None', url: 'https://github.com/bangumi/api' },
+        bangumiApi: { version: '2024-10-15', name: 'Bangumi API', license: 'None', url: 'https://github.com/bangumi/api' },
     };
     const dandanplayApi = {
         prefix: corsProxy + 'https://api.dandanplay.net/api/v2',
@@ -308,7 +308,7 @@
         tabIframeHeightLabel: 'tabIframeHeightLabel',
         tabIframeCtrlDiv: 'tabIframeCtrlDiv',
         tabIframeSrcInputDiv: 'tabIframeSrcInputDiv',
-        openSouceLicenseDiv: 'openSouceLicenseDiv',
+        openSourceLicenseDiv: 'openSourceLicenseDiv',
         videoOsdDanmakuTitle: 'videoOsdDanmakuTitle',
         osdTitleEnableDiv: 'osdTitleEnableDiv',
         danmakuSettingBtnDebug: 'danmakuSettingBtnDebug',
@@ -323,7 +323,7 @@
         init: () => customeUrl.mapping.map(obj => obj.rewrite(lsGetItem(obj.lsKey.id))),
         mapping: [
             { divId: eleIds.customeDanmakuDiv, lsKey: lsKeys.customeDanmakuUrl, rewrite: (tl) => {requireDanmakuPath = tl; }
-                , msg1: `限 ${openSouceLicense.danmaku.url} 兼容结构`
+                , msg1: `限 ${openSourceLicense.danmaku.url} 兼容结构`
                 , msg2: `Danmaku 依赖路径,index.html 引入的和篡改猴环境不会使用到,依赖已内置,
                         仅在被 CustomCssJS 执行的特殊环境下使用,支持相对/绝对/网络路径,
                         默认是相对路径等同 https://emby/web/ 和 /system/dashboard-ui/ ,非浏览器客户端必须使用网络路径`  },
@@ -356,6 +356,7 @@
         headerRight: 'headerRight',
         headerUserButton: 'headerUserButton',
         mdlSpinner: 'mdl-spinner',
+        collapseContentNav: 'collapseContent navDrawerCollapseContent',
         embyLabel: 'inputLabel',
         embyInput: 'emby-input emby-input-smaller',
         embySelectWrapper: 'emby-select-wrapper emby-select-wrapper-smaller',
@@ -1128,17 +1129,13 @@
     }
 
     function createDialog() {
+        require(['emby-select', 'emby-checkbox', 'emby-slider', 'emby-textarea', 'emby-collapse', ]);
         const html = `<div id="${eleIds.dialogContainer}"></div>`;
         embyDialog({ html, buttons: [{ name: '关闭' }] });
         waitForElement('#' + eleIds.dialogContainer, afterEmbyDialogCreated);
     }
 
     async function afterEmbyDialogCreated(dialogContainer) {
-        require([
-            'css!modules/emby-elements/emby-textarea/emby-textarea.css',
-            'css!modules/emby-elements/emby-select/emby-select.css',
-            'css!modules/emby-elements/emby-checkbox/emby-checkbox.css',
-        ]);
         const itemInfoMap = await getMapByEmbyItemInfo();
         if (itemInfoMap) {
             window.ede.searchDanmakuOpts = {
@@ -1247,7 +1244,7 @@
         ));
         getById(eleIds.heightPercentDiv, container).append(embySlider(
             { labelId: eleIds.heightPercentLabel, key: lsKeys.heightPercent.id }
-            , { value: lsGetItem(lsKeys.heightPercent.id), min: 1, max: 100, step: 1 }
+            , { value: lsGetItem(lsKeys.heightPercent.id), min: 3, max: 100, step: 1 }
             , onSliderChange, onSliderChangeLabel
         ));
         getById(eleIds.danmakuSizeDiv, container).append(embySlider(
@@ -1336,7 +1333,7 @@
                             loading="lazy" decoding="async" draggable="false" class="coveredImage-noScale"></img>
                         </div>
                     </div>
-                <div>
+                <div hidden>
                     <label class="${classes.embyLabel}" id="${eleIds.danmakuRemark}"></label>
                 </div>
                 <div>
@@ -1345,19 +1342,20 @@
                         <div id="${eleIds.currentMatchedDiv}">
                             <label class="${classes.embyLabel}">弹弹 play 总量: ${comments.length}</label>
                         </div>
-                        <label class="${classes.embyLabel}">弹弹 play 附加第三方 url: </label>
+                        <label class="${classes.embyLabel}">弹弹 play 附加的第三方 url: </label>
                     </div>
                     <div id="${eleIds.extUrlsDiv}"></div>
                 </div>
-                <div>
-                    <h4>附加弹幕</h4>
-                    <label class="${classes.embyLabel}">弹弹 play 支持解析的第三方 url: </label>
-                    <div id="${eleIds.extConmentSearchDiv}" style="display: flex;"></div>
-                    <div class="${classes.embyFieldDesc}">
-                        原接口文档说明支持(如A/B/C站),自测另外支持[ 爱奇艺视频, 腾讯视频, 优酷视频, ],不支持[ 芒果 TV, ]
-                    </div>
-                    <div class="${classes.embyFieldDesc}">
-                        仅[ 爱奇艺视频, ]需要注意网址后不能带 ? 的参数,其余网址带不带都可以
+                <div is="emby-collapse" title="附加弹幕">
+                    <div class="${classes.collapseContentNav}">
+                        <label class="${classes.embyLabel}">弹弹 play 支持解析的第三方 url: </label>
+                        <div id="${eleIds.extConmentSearchDiv}" style="display: flex;"></div>
+                        <div class="${classes.embyFieldDesc}">
+                            原接口文档说明支持(如A/B/C站),自测另外支持[ 爱奇艺视频, 腾讯视频, 优酷视频, ],不支持[ 芒果 TV, ]
+                        </div>
+                        <div class="${classes.embyFieldDesc}">
+                            仅[ 爱奇艺视频, ]需要注意网址后不能带 ? 的参数,其余网址带不带都可以
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1545,33 +1543,35 @@
         const container = getById(containerId);
         let template = `
             <div style="height: 30em;">
-                <div>
-                    <div id="${eleIds.danmakuTypeFilterDiv}" style="margin-bottom: 0.2em;">
-                        <label class="${classes.embyLabel}">${lsKeys.typeFilter.name}: </label>
-                    </div>
-                    <div id="${eleIds.danmakuSourceFilterDiv}">
-                        <label class="${classes.embyLabel}">${lsKeys.sourceFilter.name}: </label>
-                    </div>
-                    <div id="${eleIds.danmakuShowSourceDiv}">
-                        <label class="${classes.embyLabel}">${lsKeys.showSource.name}: </label>
-                    </div>
-                    <div id="${eleIds.filterKeywordsDiv}" style="margin-bottom: 0.2em;">
-                        <label class="${classes.embyLabel}">${lsKeys.filterKeywords.name}: </label>
-                    </div>
-                </div>
-                <div>
-                    <h4>额外设置</h4>
-                    <div id="${eleIds.osdTitleEnableDiv}"></div>
-                    <div id="${eleIds.danmakuChConverDiv}" style="margin-bottom: 0.2em;">
-                        <label class="${classes.embyLabel}">${lsKeys.chConvert.name}: </label>
-                    </div>
-                    <div id="${eleIds.danmakuEngineDiv}" style="margin-bottom: 0.2em;">
-                        <label class="${classes.embyLabel}">${lsKeys.engine.name}: </label>
+                <div is="emby-collapse" title="弹幕屏蔽" data-expanded="true">
+                    <div class="${classes.collapseContentNav}">
+                        <div id="${eleIds.danmakuTypeFilterDiv}" style="margin-bottom: 0.2em;">
+                            <label class="${classes.embyLabel}">${lsKeys.typeFilter.name}: </label>
+                        </div>
+                        <div id="${eleIds.danmakuSourceFilterDiv}">
+                            <label class="${classes.embyLabel}">${lsKeys.sourceFilter.name}: </label>
+                        </div>
+                        <div id="${eleIds.danmakuShowSourceDiv}">
+                            <label class="${classes.embyLabel}">${lsKeys.showSource.name}: </label>
+                        </div>
+                        <div id="${eleIds.filterKeywordsDiv}" style="margin-bottom: 0.2em;">
+                            <label class="${classes.embyLabel}">${lsKeys.filterKeywords.name}: </label>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <h4>播放设置</h4>
-                    <div>
+                <div is="emby-collapse" title="额外设置">
+                    <div class="${classes.collapseContentNav}" style="padding-top: 0.5em !important;">
+                        <div id="${eleIds.osdTitleEnableDiv}"></div>
+                        <div id="${eleIds.danmakuChConverDiv}" style="margin-bottom: 0.2em;">
+                            <label class="${classes.embyLabel}">${lsKeys.chConvert.name}: </label>
+                        </div>
+                        <div id="${eleIds.danmakuEngineDiv}" style="margin-bottom: 0.2em;">
+                            <label class="${classes.embyLabel}">${lsKeys.engine.name}: </label>
+                        </div>
+                    </div>
+                </div>
+                <div is="emby-collapse" title="播放设置">
+                    <div class="${classes.collapseContentNav}">
                         <label class="${classes.embyLabel}">单次定时执行: </label>
                         <div id="${eleIds.timeoutCallbackTypeDiv}"></div>
                         <label class="${classes.embyLabel}">定时单位: </label>
@@ -1582,37 +1582,36 @@
                             <label id="${eleIds.timeoutCallbackLabel}" style="width:4em;"></label>
                         </div>
                     </div>
-                    <div>
-                        <h4>Bangumi 设置</h4>
-                        <div>
-                            <label id="${eleIds.bangumiEnableLabel}" class="${classes.embyLabel}"></label>
-                            <di id="${eleIds.bangumiSettingsDiv}">
-                                <div id="${eleIds.bangumiTokenInputDiv}" style="display: flex;" ></div>
-                                <div id="${eleIds.bangumiTokenLabel}" class="${classes.embyFieldDesc}"></div>
-                                <div class="${classes.embyFieldDesc}">
-                                    你可以在以下链接生成一个 Access Token
-                                </div>
-                                <div id="${eleIds.bangumiTokenLinkDiv}" style="padding-bottom: 0.5em;"></div>
-                                <label class="${classes.embyLabel}">自动更新单章节收藏信息: </label>
-                                <div style="${styles.embySlider}">
-                                    <label class="${classes.embyLabel}" style="width:4em;">${lsKeys.bangumiPostPercent.name}: </label>
-                                    <div id="${eleIds.bangumiPostPercentDiv}" style="width: 15.5em; text-align: center;"></div>
-                                    <label>
-                                        <label id="${eleIds.bangumiPostPercentLabel}" style="width:4em;"></label>
-                                        <label>%</label>
-                                    </label>
-                                </div>
-                                <div class="${classes.embyFieldDesc}">
-                                    触发时机为正常停止播放,且播放进度超过设定百分比时;
-                                    同步的媒体信息为自动匹配而来,可在"弹幕信息"中查看;
-                                    自动匹配有误可"手动匹配",仍无法匹配可点击按钮X"取消匹配/清除弹幕",则此单章节不会同步;
-                                </div>
+                </div>
+                <div is="emby-collapse" title="Bangumi 设置">
+                    <div class="${classes.collapseContentNav}" style="padding-top: 0.5em !important;">
+                        <label id="${eleIds.bangumiEnableLabel}" class="${classes.embyLabel}"></label>
+                        <div id="${eleIds.bangumiSettingsDiv}">
+                            <div id="${eleIds.bangumiTokenInputDiv}" style="display: flex;" ></div>
+                            <div id="${eleIds.bangumiTokenLabel}" class="${classes.embyFieldDesc}"></div>
+                            <div class="${classes.embyFieldDesc}">
+                                你可以在以下链接生成一个 Access Token
+                            </div>
+                            <div id="${eleIds.bangumiTokenLinkDiv}" style="padding-bottom: 0.5em;"></div>
+                            <label class="${classes.embyLabel}">自动更新单章节收藏信息: </label>
+                            <div style="${styles.embySlider}">
+                                <label class="${classes.embyLabel}" style="width:4em;">${lsKeys.bangumiPostPercent.name}: </label>
+                                <div id="${eleIds.bangumiPostPercentDiv}" style="width: 15.5em; text-align: center;"></div>
+                                <label>
+                                    <label id="${eleIds.bangumiPostPercentLabel}" style="width:4em;"></label>
+                                    <label>%</label>
+                                </label>
+                            </div>
+                            <div class="${classes.embyFieldDesc}">
+                                触发时机为正常停止播放,且播放进度超过设定百分比时;
+                                同步的媒体信息为自动匹配而来,可在"弹幕信息"中查看;
+                                自动匹配有误可"手动匹配",仍无法匹配可点击按钮X"取消匹配/清除弹幕",则此单章节不会同步;
                             </div>
                         </div>
                     </div>
-                    <div id="${eleIds.customeUrlsDiv}">
-                        <h4>自定义接口地址</h4>
-                    </div>
+                </div>
+                <div is="emby-collapse" title="自定义接口地址">
+                    <div id="${eleIds.customeUrlsDiv}" class="${classes.collapseContentNav}"></div>
                 </div>
             </div>
         `;
@@ -1727,7 +1726,7 @@
         bangumiTokenInputDiv.append(embyButton({ label: '校验', iconKey: iconKeys.check}, onEnterBangumiToken));
         getById(eleIds.bangumiPostPercentDiv, container).append(embySlider(
             { labelId: eleIds.bangumiPostPercentLabel, key: lsKeys.bangumiPostPercent.id }
-            , { value: lsGetItem(lsKeys.bangumiPostPercent.id), min: 1, max: 100, step: 1 }
+            , { value: lsGetItem(lsKeys.bangumiPostPercent.id), min: 1, max: 99, step: 1 }
             , (val, props) => { onSliderChange(val, props, false) }, onSliderChangeLabel
         ));
         const bangumiTokenLinkDiv = getById(eleIds.bangumiTokenLinkDiv, container);
@@ -1787,16 +1786,16 @@
                 </div>
                 <div class="${classes.embyFieldDesc}">注意开启后原本控制台中调用方信息将被覆盖,不使用请保持关闭状态</div>
                 <div id="${eleIds.consoleLogCtrl}"></div>
-                <div>
-                    <h4>开发者选项</h4>
-                    <label class="${classes.embyLabel}">调试开关: </label>
-                    <div id="${eleIds.debugCheckbox}"></div>
-                    <label class="${classes.embyLabel}">调试按钮: </label>
-                    <div id="${eleIds.debugButton}"></div>
+                <div is="emby-collapse" title="开发者选项">
+                    <div class="${classes.collapseContentNav}">
+                        <label class="${classes.embyLabel}">调试开关: </label>
+                        <div id="${eleIds.debugCheckbox}"></div>
+                        <label class="${classes.embyLabel}">调试按钮: </label>
+                        <div id="${eleIds.debugButton}"></div>
+                    </div>
                 </div>
-                <div>
-                    <h4>开放源代码许可</h4>
-                    <div style="display: flex; flex-direction: column;" id="${eleIds.openSouceLicenseDiv}"></div>
+                <div is="emby-collapse" title="开放源代码许可" data-expanded="true">
+                    <div id="${eleIds.openSourceLicenseDiv}" class="${classes.collapseContentNav}" style="display: flex; flex-direction: column;"></div>
                 </div>
             </div>
         `;
@@ -1804,7 +1803,7 @@
         buildConsoleLog(container);
         buildDebugCheckbox(container);
         buildDebugButton(container);
-        buildOpenSouceLicense(container);
+        buildOpenSourceLicense(container);
     }
 
     function buildConsoleLog(container) {
@@ -1981,9 +1980,9 @@
         }));
     }
 
-    function buildOpenSouceLicense(container) {
-        const openSourceWrapper = getById(eleIds.openSouceLicenseDiv, container);
-        Object.entries(openSouceLicense).map(([key, val]) => {
+    function buildOpenSourceLicense(container) {
+        const openSourceWrapper = getById(eleIds.openSourceLicenseDiv, container);
+        Object.entries(openSourceLicense).map(([key, val]) => {
             openSourceWrapper.append(embyALink(val.url, [key, val.name, val.version, val.license].join(':')));
         });
     }
@@ -2064,7 +2063,6 @@
         embyToast({ text: `${lsKeys.quickDebugOn.name}: ${flag}!`, icon: iconKeys.sentiment_very_satisfied });
         if (!window.ede) { window.ede = new EDE(); }
         lsSetItem(lsKeys.quickDebugOn.id, flag);
-        require(['emby-slider']);
         checkRuntimeVars();
     }
 
@@ -2097,6 +2095,7 @@
         if (!embySearch) { return; }
         let searchName = embySearch.value
         const danmakuRemarkEle = getById(eleIds.danmakuRemark);
+        danmakuRemarkEle.parentNode.hidden = false;
         danmakuRemarkEle.innerText = searchName ? '' : '请填写标题';
         const spinnerEle = getByClass(classes.mdlSpinner);
         spinnerEle.classList.remove('hide');

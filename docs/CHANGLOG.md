@@ -1,4 +1,14 @@
 
+#### 1.36
+
+#### 2024-10-16
+refactor: 折叠不常用功能
+
+fix: 精确 match 范围
+(https://github.com/chen3861229/dd-danmaku/issues/12)
+
+fix: 缩小部分不合理的数值范围
+
 #### 1.35
 
 #### 2024-10-15
